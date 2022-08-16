@@ -4,7 +4,7 @@
 \alias{SurvivalCurvePlot}
 \title{Survival curve plot}
 \usage{
-SurvivalCurvePlot(fit, geneName, pval = pval)
+SurvivalCurvePlot(fit, geneName, pval)
 }
 \arguments{
 \item{fit}{model from survival::survfit}
@@ -18,6 +18,11 @@ Survival curve plot
 }
 \description{
 Survival curve plot
+}
+\examples{
+fit <- survfit(Surv(time, status) ~ x, data = aml)
+pval <- survdiff(Surv(time, status) ~ x, data = aml)$pvalue
+SurvivalCurvePlot(fit, "gene", pval = pval)
 }
 \author{
 Yangming si

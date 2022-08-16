@@ -46,9 +46,14 @@ calibratePlot <- function(cal, xlim_min = 0, xlim_max = 1, ylim_min = 0, ylim_ma
 #' @return Risk Score Rank plot
 #' @author Yangming si
 #' @examples
-#' data(riskScore)
+#' library(dplyr)
+#' data(clinical)
+#' clinical <- arrange(clinical, riskScore)
+#' RiskScoreRankPlot(clinical$riskScore)
 #' @export
 RiskScoreRankPlot <- function(riskScore) {
+  lowLength <- sum(riskScore <= median(riskScore))
+  highLength <- sum(riskScore > median(riskScore))
   plot(riskScore,
     type = "p",
     pch = 20,
@@ -72,8 +77,12 @@ RiskScoreRankPlot <- function(riskScore) {
 #' @param pval p Value
 #' @return Survival curve plot
 #' @author Yangming si
+#' @examples
+#' fit <- survfit(Surv(time, status) ~ x, data = aml)
+#' pval <- survdiff(Surv(time, status) ~ x, data = aml)$pvalue
+#' SurvivalCurvePlot(fit, "gene", pval = pval)
 #' @export
-SurvivalCurvePlot <- function(fit, geneName, pval = pval) {
+SurvivalCurvePlot <- function(fit, geneName, pval) {
   plot(fit,
     col = c("blue", "red"), xlab = "Time (months)", ylab = "Overall survival",
     main = paste(geneName, "(p=", pval, ")", sep = ""), mark.time = T, ylim = c(0, 1.1),
@@ -86,3 +95,5 @@ SurvivalCurvePlot <- function(fit, geneName, pval = pval) {
   col = c("blue", "red"), bty = "n", lwd = 2, cex = 0.8
   )
 }
+
+

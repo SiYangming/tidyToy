@@ -12,7 +12,7 @@ Imports: tidyverse, reshape2, ggplot2, plyr, ggpubr,
          FactoMineR, factoextra,
          clusterProfiler, org.Hs.eg.db, enrichplot,
          patchwork,
-         limma,
+         limma, qvalue,
          CLL
 Suggests: roxygen2
 License: `use_gpl3_license()`

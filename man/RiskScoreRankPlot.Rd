@@ -16,7 +16,10 @@ Risk Score Rank plot
 Risk Score Rank Plot of a lasso cox survival model
 }
 \examples{
-data(riskScore)
+library(dplyr)
+data(clinical)
+clinical <- arrange(clinical, riskScore)
+RiskScoreRankPlot(clinical$riskScore)
 }
 \author{
 Yangming si
