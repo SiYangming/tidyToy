@@ -1,0 +1,19 @@
+Package: tidyToy
+Title: Some tiny function
+Version: 0.0.0.9000
+Authors@R: 
+    person("Yangming", "SI", , "siyangming1991@163.com", role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-5004-0559"))
+Description: Analysis of some functions and data accumulated in practice.
+Depends: R (>= 3.5)
+Imports: tidyverse, reshape2, ggplot2, plyr, ggpubr,
+         corrplot, pheatmap, 
+         ggrepel,
+         FactoMineR, factoextra,
+         clusterProfiler, org.Hs.eg.db, enrichplot,
+         patchwork
+Suggests: roxygen2
+License: `use_gpl3_license()`
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.2.1
