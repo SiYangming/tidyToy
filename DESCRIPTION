@@ -11,7 +11,8 @@ Imports: tidyverse, reshape2, ggplot2, plyr, ggpubr,
          ggrepel,
          FactoMineR, factoextra,
          clusterProfiler, org.Hs.eg.db, enrichplot,
-         patchwork
+         patchwork,
+         limma
 Suggests: roxygen2
 License: `use_gpl3_license()`
 Encoding: UTF-8
