@@ -1,0 +1,24 @@
+aDC,#'   \item{,#'   \item{aDC}{gene signature in aDC cell}
+B cells,},#'   \item{B cells}{gene signature in B cells cell}
+CD8 T cells,{,#'   \item{CD8 T cells}{gene signature in CD8 T cells cell}
+Cytotoxic cells,},#'   \item{Cytotoxic cells}{gene signature in Cytotoxic cells cell}
+DC,gene signature in ,#'   \item{DC}{gene signature in DC cell}
+Eosinophils, cell,#'   \item{Eosinophils}{gene signature in Eosinophils cell}
+iDC,,#'   \item{iDC}{gene signature in iDC cell}
+Macrophages,,#'   \item{Macrophages}{gene signature in Macrophages cell}
+Mast cells,,#'   \item{Mast cells}{gene signature in Mast cells cell}
+Neutrophils,,#'   \item{Neutrophils}{gene signature in Neutrophils cell}
+NK CD56bright cells,,#'   \item{NK CD56bright cells}{gene signature in NK CD56bright cells cell}
+NK CD56dim cells,,#'   \item{NK CD56dim cells}{gene signature in NK CD56dim cells cell}
+NK cells,,#'   \item{NK cells}{gene signature in NK cells cell}
+pDC,,#'   \item{pDC}{gene signature in pDC cell}
+T cells,,#'   \item{T cells}{gene signature in T cells cell}
+T helper cells,,#'   \item{T helper cells}{gene signature in T helper cells cell}
+Tcm,,#'   \item{Tcm}{gene signature in Tcm cell}
+Tem,,#'   \item{Tem}{gene signature in Tem cell}
+TFH,,#'   \item{TFH}{gene signature in TFH cell}
+Tgd,,#'   \item{Tgd}{gene signature in Tgd cell}
+Th1 cells,,#'   \item{Th1 cells}{gene signature in Th1 cells cell}
+Th17 cells,,#'   \item{Th17 cells}{gene signature in Th17 cells cell}
+Th2 cells,,#'   \item{Th2 cells}{gene signature in Th2 cells cell}
+TReg,,#'   \item{TReg}{gene signature in TReg cell}
