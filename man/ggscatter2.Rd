@@ -2,31 +2,32 @@
 % Please edit documentation in R/plot.R
 \name{ggscatter2}
 \alias{ggscatter2}
-\title{Scatter plot for immunity Results}
+\title{Scatter plot for Two Variables}
 \usage{
-ggscatter2(genename, cell, gene_mat, cell_matrix, trend = "pos")
+ggscatter2(col1, col2, mat, trend = "pos", method = "pearson")
 }
 \arguments{
-\item{genename}{gene Name}
+\item{col1}{column names of input data frame}
 
-\item{cell}{Cell Name}
+\item{col2}{Ccolumn names of input data frame}
 
-\item{gene_mat}{Gene Expression Matrix}
-
-\item{cell_matrix}{Cell signal Matrix}
+\item{mat}{Expression Matrix or data frame, not tibble}
 
 \item{trend}{pos or neg}
+
+\item{method}{one of "pearson", "kendall", or "spearman"}
 }
 \value{
 A ggplot2 object of scatter plot
 }
 \description{
-Scatter plot for immunity Results
+Scatter plot for Two Variables
 }
 \examples{
 df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
-ggscatter2("gene1", "gene3", df1, df2)
+df <- cbind(df1, df2)
+ggscatter2("gene1", "gene3", df)
 }
 \author{
 Yangming si
