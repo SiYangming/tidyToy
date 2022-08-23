@@ -11,3 +11,4 @@ save(immunity24, file = "data/immunity24.rda")
 write_csv(as.data.frame(names(immunity24)),
           file = "data-raw/immunity/immunity24cells.csv",
           col_names = FALSE)
+cibersort

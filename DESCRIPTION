@@ -7,7 +7,7 @@ Authors@R:
 Description: Analysis of some functions and data accumulated in practice.
 Depends: R (>= 3.5)
 Imports: tidyverse, reshape2, ggplot2, plyr, ggpubr,
-         corrplot, pheatmap, 
+         corrplot, pheatmap, wordcloud, maftools,
          ggrepel,
          FactoMineR, factoextra,
          clusterProfiler, org.Hs.eg.db, enrichplot,
