@@ -1,31 +1,31 @@
-#' Box plot for immunity Results
+#' Box plot for One vs More Variables: immunity Results
 #'
-#' @param genename gene Name
-#' @param cell Cell Name: One or More
-#' @param gene_mat Gene Expression Matrix
-#' @param cell_matrix Cell signal Matrix
+#' @param col1 column names of input data frame, only one
+#' @param col2 column names of input data frame, One or More
+#' @param mat Expression Matrix or data frame, not tibble
 #' @return A ggplot2 object of box plot
 #' @author Yangming si
 #' @examples
 #' df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 #' df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
-#' ggboxplot2("gene1", "gene3", df1, df2)
+#' df <- cbind(df1, df2)
+#' ggboxplot2("gene1", "gene3", df)
 #' @export
 
-ggboxplot2 <- function(genename, cell, gene_mat, cell_matrix) {
-  gene <- as.numeric(gene_mat[, genename])
+ggboxplot2 <- function(col1, col2, mat) {
+  gene <- as.numeric(mat[, col1])
   group <- if_else(gene > median(gene),
-                   paste0(genename, "-High"),
-                   paste0(genename, "-Low"))
-  group <- factor(group, levels = c(paste0(genename, "-Low"),
-                                    paste0(genename, "-High")))
-  if (length(cell) > 1) {
+                   paste0(col1, "-High"),
+                   paste0(col1, "-Low"))
+  group <- factor(group, levels = c(paste0(col1, "-Low"),
+                                    paste0(col1, "-High")))
+  if (length(col2) > 1) {
     box <- reshape2::melt(data.frame(group = group,
-                           cell_matrix[,cell]))
+                           mat[,col2]))
   } else {
     box <- reshape2::melt(data.frame(group = group,
-                           cell_matrix[,cell]))
-    box$variable <- cell
+                                     mat[,col2]))
+    box$variable <- col2
   }
 
   box$variable <- str_replace_all(box$variable, "\\.", " ")
@@ -58,13 +58,17 @@ ggboxplot2 <- function(genename, cell, gene_mat, cell_matrix) {
 
 ggscatter2 <- function(col1, col2, mat, trend = "pos", method = "pearson") {
   scatter <- data.frame(x = mat[, col1], y = mat[, col2])
+
+  trend <- ifelse(cor.test(scatter$x, scatter$y,
+                           method = method)$estimate > 0,
+                  "pos", "neg")
   if (trend == "pos") {
-    label.x = min(scatter$x) + 0.5
-    label.y = max(scatter$y) - 0.03
+    label.x = mean(scatter$x)
+    label.y = max(scatter$y) - mean(scatter$y)/2
   }
   if (trend == "neg") {
-    label.x = max(scatter$x) - 0.5
-    label.y = max(scatter$y) - 0.03
+    label.x = mean(scatter$x)
+    label.y = max(scatter$y) - mean(scatter$y)/2
   }
   p <- ggpubr::ggscatter(scatter,
                  x = "x", y = "y",
