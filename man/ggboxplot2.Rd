@@ -2,29 +2,28 @@
 % Please edit documentation in R/plot.R
 \name{ggboxplot2}
 \alias{ggboxplot2}
-\title{Box plot for immunity Results}
+\title{Box plot for One vs More Variables: immunity Results}
 \usage{
-ggboxplot2(genename, cell, gene_mat, cell_matrix)
+ggboxplot2(col1, col2, mat)
 }
 \arguments{
-\item{genename}{gene Name}
+\item{col1}{column names of input data frame, only one}
 
-\item{cell}{Cell Name: One or More}
+\item{col2}{column names of input data frame, One or More}
 
-\item{gene_mat}{Gene Expression Matrix}
-
-\item{cell_matrix}{Cell signal Matrix}
+\item{mat}{Expression Matrix or data frame, not tibble}
 }
 \value{
 A ggplot2 object of box plot
 }
 \description{
-Box plot for immunity Results
+Box plot for One vs More Variables: immunity Results
 }
 \examples{
 df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
-ggboxplot2("gene1", "gene3", df1, df2)
+df <- cbind(df1, df2)
+ggboxplot2("gene1", "gene3", df)
 }
 \author{
 Yangming si
