@@ -40,24 +40,24 @@ ggboxplot2 <- function(genename, cell, gene_mat, cell_matrix) {
   return(p)
 }
 
-#' Scatter plot for immunity Results
+#' Scatter plot for Two Variables
 #'
-#' @param genename gene Name
-#' @param cell Cell Name
-#' @param gene_mat Gene Expression Matrix
-#' @param cell_matrix Cell signal Matrix
+#' @param col1 column names of input data frame
+#' @param col2 Ccolumn names of input data frame
+#' @param mat Expression Matrix or data frame, not tibble
 #' @param trend pos or neg
+#' @param method one of "pearson", "kendall", or "spearman"
 #' @return A ggplot2 object of scatter plot
 #' @author Yangming si
 #' @examples
 #' df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 #' df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
-#' ggscatter2("gene1", "gene3", df1, df2)
+#' df <- cbind(df1, df2)
+#' ggscatter2("gene1", "gene3", df)
 #' @export
 
-ggscatter2 <- function(genename, cell, gene_mat, cell_matrix, trend = "pos") {
-  x <- gene_mat[, genename]
-  scatter <- data.frame(x = x, y = cell_matrix[,cell])
+ggscatter2 <- function(col1, col2, mat, trend = "pos", method = "pearson") {
+  scatter <- data.frame(x = mat[, col1], y = mat[, col2])
   if (trend == "pos") {
     label.x = min(scatter$x) + 0.5
     label.y = max(scatter$y) - 0.03
@@ -71,11 +71,11 @@ ggscatter2 <- function(genename, cell, gene_mat, cell_matrix, trend = "pos") {
                  fill = "black",
                  color = "black", shape = 21, size = 1, # Points color, shape and size
                  # add = "reg.line", # Add regressin line
-                 xlab = genename, ylab = cell,
+                 xlab = col1, ylab = col2,
                  add.params = list(color = "blue", fill = "lightgray"), # Customize reg.line
                  conf.int = TRUE, # Add confidence interval
                  cor.coef = TRUE, # Add correlation coefficient. see ?stat_cor
-                 cor.coeff.args = list(method = "pearson",
+                 cor.coeff.args = list(method = method,
                                        label.x = label.x,
                                        label.y = label.y,
                                        label.sep = "\n")
