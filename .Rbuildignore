@@ -1,2 +1,4 @@
 ^tidyToy\.Rproj$
 ^\.Rproj\.user$
+^doc$
+^Meta$

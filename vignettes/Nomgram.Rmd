@@ -1,0 +1,236 @@
+---
+title: "Nomogram"
+author: Yangming si
+date: "`r format(Sys.time())`"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: cosmo
+    code_folding: hide
+  rmarkdown::html_vignette:
+    keep_md: true
+vignette: >
+  %\VignetteIndexEntry{Nomogram}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r options, echo=FALSE, message=FALSE}
+library(rmarkdown)
+library(knitr)
+options(replace.assign = TRUE, width = 90)
+opts_chunk$set(dev = c("png"), fig.width = 5, fig.height = 5, out.width = "800px", fig.align = "center", fig.pos = "htbp", fig.retina = FALSE, dev.args = list(pointsize = 11), cache = FALSE, dpi = 600)
+```
+
+``` r
+library(rms)
+library(rmda)
+library(dplyr)
+```
+
+# rms和Hmisc包
+
+## 示例5：risk, 临床信息
+
+``` r
+data("NomogramData", package = "StatPlotR")
+```
+
+### Nomogram基因表达列线图
+
+``` r
+#数据打包
+geneExp <- NomogramData$geneExp
+dd <- datadist(geneExp)
+options(datadist="dd")
+formal <- colnames(geneExp)[-c(1:2)] %>%
+  paste(collapse = "+")
+formal
+#生成函数
+#lrm
+f <- cph(Surv(futime, fustat) ~ FOXM1+IGF2BP3, 
+         x=TRUE, y=TRUE, surv=TRUE,
+         data=geneExp, time.inc=1)
+surv <- Survival(f)
+```
+
+``` r
+#建立nomogram
+nom <- nomogram(f, fun=list(function(x) surv(1, x), 
+                            function(x) surv(2, x), 
+                            function(x) surv(3, x)), 
+                lp=F, funlabel=c("1-year survival", 
+                                 "2-year survival", 
+                                 "3-year survival"), 
+                maxscale=100, 
+                fun.at=c(0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 
+                         0.4, 0.3,0.2,0.1,0.05)) 
+plot(nom)
+```
+
+### Nomogram临床信息列线图
+
+``` r
+clinical <- NomogramData$clinical
+#数据打包
+dd <- datadist(clinical)
+options(datadist="dd")
+formal <- colnames(clinical)[-c(1:2)] %>%
+  paste(collapse = "+")
+formal
+#生成函数
+f <- cph(Surv(futime, fustat) ~ 
+           Gender+Age+Stage+priorMalignancy+riskScore, 
+         x=T, y=T, surv=T, data=clinical)
+##计算C-index
+coxpe <- predict(f)
+#模型预测
+c_index=1-rcorr.cens(coxpe,Surv(clinical$futime,clinical$fustat))
+c_index
+
+#逻辑回归lrm
+surv <- Survival(f)
+### 3年Calibrate
+f3 <- cph(Surv(futime, fustat) ~ 
+           Gender+Age+Stage+priorMalignancy+riskScore, 
+         x=T, y=T, surv=T, data=clinical, time.inc=1*365*3)
+cal3 <- calibrate(f3, cmethod="KM", 
+                 method="boot", 
+                 u=1*365*3, m= 50, B=1000)
+```
+
+``` r
+plot(cal3,lwd=2,lty=1,errbar.col="black",
+     xlim = c(0,1),ylim = c(0,1),
+     xlab ="Nomogram-Predicted Probability of 3-Year Survival",
+     ylab="Actual 3-Year Survival",
+     col="blue",
+     sub=F)
+
+lines(x=cal3[,"mean.predicted"],y=cal3[,"KM"],
+      #c('mean.predicted','KM'),
+      type = 'l',lwd = 3,col ="black" ,
+      pch = 16)
+mtext("")
+box(lwd = 0.5)
+abline(0,1,lty = 3,lwd = 2,col = "black")
+```
+
+``` r
+#建立nomogram
+nom <- nomogram(f, fun=list(function(x) surv(1*365*1, lp=x), 
+                            function(x) surv(1*365*2, lp=x), 
+                            function(x) surv(1*365*3, lp=x)), 
+                lp=F, funlabel=c("1-year survival", 
+                                 "2-year survival", 
+                                 "3-year survival"), 
+                maxscale=100, 
+                fun.at=c(0.99, 0.9, 0.8, 0.7, 0.6, 0.5, 
+                         0.4, 0.3,0.2,0.1,0.05))  
+#nomogram可视化
+plot(nom)
+```
+
+``` r
+seer <- NomogramData$seer
+#将数据转换成因子格式 
+seer$age<-factor(seer$age,labels=c("<50","50-59","60-69","70-79",">=80"))
+seer$sex<-factor(seer$sex,labels=c("Female","Male"))
+seer$race<-factor(seer$race,labels=c("Black","White","Other"))
+seer$stage_T<-factor(seer$stage_T,labels=c("T0","T1","T2","T3a","T3b","T3NOS","T4","TX"))
+seer$stage_N<-factor(seer$stage_N,labels=c("N0","N1","NX"))
+seer$stage_M<-factor(seer$stage_M,labels=c("M0","M1"))
+
+#将数据打包好
+ddist <- datadist(seer)
+options(datadist='ddist')
+
+#构建多因素的Cox回归模型
+cox <- cph(Surv(survival_time,status) ~
+             age + sex + race  + stage_T + stage_N + stage_M,
+           surv=T,x=T, y=T,data=seer) 
+surv <- Survival(cox)
+```
+
+``` r
+sur_3_year <- function(x) surv(1 * 12 * 3, lp = x) # 3年生存
+sur_5_year <- function(x) surv(1 * 12 * 5, lp = x) # 5年生存
+nom_sur <- nomogram(cox,
+  fun = list(
+    sur_3_year,
+    sur_5_year
+  ),
+  lp = F, funlabel = c(
+    "3-Year Survival",
+    "5-Year survival"
+  ),
+  maxscale = 100,
+  fun.at = c("0.9", "0.8", "0.7", "0.6", "0.5", "0.4", "0.3", "0.2", "0.1")
+)
+plot(nom_sur, xfrac = 0.25)
+```
+
+### 非肿瘤non_tumor模型
+
+``` r
+non_tumor <- NomogramData$NonTumor
+non_tumor$Use_of_GC <- factor(non_tumor$Use_of_GC, labels = c("No", "Yes"))
+non_tumor$Use_of_NSAIDs <- factor(non_tumor$Use_of_NSAIDs, labels = c("No", "Yes"))
+non_tumor$Number_of_questions <- factor(non_tumor$Number_of_questions, labels = c("0", "1", ">=2"))
+non_tumor$Education_level <- factor(non_tumor$Education_level, labels = c("Primary", "Secondary", "Higher"))
+non_tumor$Distance <- factor(non_tumor$Distance, labels = c("<3km", ">=3km"))
+ddist <- datadist(non_tumor)
+options(datadist = "ddist")
+
+### logistics逻辑回归
+mylog <- glm(Status ~ Use_of_GC + Use_of_NSAIDs + Number_of_questions + Education_level + Distance, family = binomial(link = "logit"), data = non_tumor)
+summary(mylog)
+```
+
+``` r
+coefficients(mylog)
+exp(coefficients(mylog))
+exp(confint(mylog))
+```
+
+``` r
+mylog2 <- lrm(Status ~ Use_of_GC + Use_of_NSAIDs + Number_of_questions + Education_level + Distance, data = non_tumor, x = T, y = T)
+
+myc <- validate(mylog2,
+  method = "b",
+  B = 1000, pr = T, dxy = T
+)
+c_index <- (myc[1, 5] + 1) / 2
+c_index
+
+Cindex <- rcorrcens(non_tumor$Status ~ predict(mylog2))
+Cindex
+```
+
+c-index: 0.5,模型没有任何预测能力 0.5-0.7,比差的准确性 0.71-0.9，中等的准确性 \>0.9,高准确性
+
+``` r
+mycal <- calibrate(mylog2, method = "boot", B = 1000)
+plot(mycal,
+  xlab = "Nomogram-predicted probability of nonadherence",
+  ylab = "Actual diagnosed nonadherence (proportion)", sub = F
+)
+```
+
+``` r
+modul <- decision_curve(Status ~ Use_of_GC + Use_of_NSAIDs + Number_of_questions + Education_level + Distance,
+  data = non_tumor,
+  family = binomial(link = "logit"),
+  thresholds = seq(0, 1, by = 0.01),
+  confidence.intervals = 0.95
+)
+plot_decision_curve(modul,
+  curve.names = "Nonadherence prediction nomogram", xlab = "Threshold probability",
+  cost.benefit.axis = FALSE, col = "blue",
+  confidence.intervals = FALSE,
+  standardize = FALSE
+)
+# modul
+# 净获益率
+```

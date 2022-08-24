@@ -1,0 +1,7 @@
+Type	Correlation.Coefficient	pvalue
+B cells navie	-0.37393225	5.81E-03
+B cells memory	0.48520775	2.31E-04
+Plasma cells	0.53412511	3.80E-05
+T cells CD8	0.24822108	7.31E-02
+NK cells activated	-0.06596146	6.39E-01
+Monocytes	0.16463119	2.39E-01
