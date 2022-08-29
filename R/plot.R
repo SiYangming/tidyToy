@@ -3,48 +3,83 @@
 #' @param col1 column names of input data frame, only one
 #' @param col2 column names of input data frame, One or More
 #' @param mat Expression Matrix or data frame, not tibble
+#' @param group group column name or null, default NULL
 #' @return A ggplot2 object of box plot
 #' @author Yangming si
 #' @examples
+#' # example 1: Low High group
 #' df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 #' df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
 #' df <- cbind(df1, df2)
 #' ggboxplot2("gene1", "gene3", df)
+#' # example 2: multi group
+#' df1 <- data.frame(gene1 = rnorm(30), gene2 = rnorm(30), gene3 = rnorm(30))
+#' df2 <- data.frame(group = rep(c(1, 2, 3), each = 10))
+#' df <- cbind(df1, df2)
+#' ggboxplot2("gene1", "group", df, group = "group")
 #' @export
 
-ggboxplot2 <- function(col1, col2, mat) {
+ggboxplot2 <- function(col1, col2, mat, group = NULL) {
   gene <- as.numeric(mat[, col1])
-  group <- if_else(gene > median(gene),
-    paste0(col1, "-High"),
-    paste0(col1, "-Low")
-  )
-  group <- factor(group, levels = c(
-    paste0(col1, "-Low"),
-    paste0(col1, "-High")
-  ))
-  if (length(col2) > 1) {
-    box <- reshape2::melt(data.frame(
-      group = group,
-      mat[, col2]
+  if (is.null(group)) {
+    group <- if_else(gene > median(gene),
+                     paste0(col1, "-High"),
+                     paste0(col1, "-Low")
+    )
+    group <- factor(group, levels = c(
+      paste0(col1, "-Low"),
+      paste0(col1, "-High")
     ))
+    if (length(col2) > 1) {
+      box <- reshape2::melt(data.frame(
+        group = group,
+        mat[, col2]
+      ))
+    } else {
+      box <- reshape2::melt(data.frame(
+        group = group,
+        mat[, col2]
+      ))
+      box$variable <- col2
+    }
+
+    box$variable <- str_replace_all(box$variable, "\\.", " ")
+
+    p <- ggpubr::ggboxplot(box,
+                           x = "variable", y = "value", color = "group",
+                           palette = c("#00AFBB", "#E7B800")
+    ) +
+      # easy_rotate_x_labels(angle = 45, teach = TRUE)
+      # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      ggpubr::stat_compare_means(aes(group = group), label = "p.signif") +
+      xlab("") + ylab("")
   } else {
-    box <- reshape2::melt(data.frame(
-      group = group,
-      mat[, col2]
-    ))
-    box$variable <- col2
+    box <- mat[, c(col1, group)]
+    my_comparisons <- Group2Comparison(unique(sort(as.character(box[, group]))))
+    p <- ggpubr::ggboxplot(box, x = group,
+                           y = col1, color = group) +
+      ggpubr::stat_compare_means(ggplot2::aes(group = group),
+                                 comparisons = my_comparisons,
+                                 label = "p.signif") +
+      ggplot2::xlab(group) + ggplot2::ylab(col1)
   }
 
-  box$variable <- str_replace_all(box$variable, "\\.", " ")
-  p <- ggpubr::ggboxplot(box,
-    x = "variable", y = "value", color = "group",
-    palette = c("#00AFBB", "#E7B800")
-  ) +
-    # easy_rotate_x_labels(angle = 45, teach = TRUE)
-    # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    ggpubr::stat_compare_means(aes(group = group), label = "p.signif") +
-    xlab("") + ylab("")
+
   return(p)
+}
+
+#' Covert Group vector to a comparison list
+#'
+#' @param group group character vector
+#' @return A group comparison list
+#' @author Yangming si
+#' @examples
+#' group <- as.character(1:3)
+#' Group2Comparison(group)
+#' @export
+
+Group2Comparison <- function(group){
+  return(combn(group, 2, simplify = FALSE))
 }
 
 #' Scatter plot for Two Variables
