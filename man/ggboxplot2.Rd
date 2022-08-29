@@ -4,7 +4,7 @@
 \alias{ggboxplot2}
 \title{Box plot for One vs More Variables: immunity Results}
 \usage{
-ggboxplot2(col1, col2, mat)
+ggboxplot2(col1, col2, mat, group = NULL)
 }
 \arguments{
 \item{col1}{column names of input data frame, only one}
@@ -12,6 +12,8 @@ ggboxplot2(col1, col2, mat)
 \item{col2}{column names of input data frame, One or More}
 
 \item{mat}{Expression Matrix or data frame, not tibble}
+
+\item{group}{group column name or null, default NULL}
 }
 \value{
 A ggplot2 object of box plot
@@ -20,10 +22,16 @@ A ggplot2 object of box plot
 Box plot for One vs More Variables: immunity Results
 }
 \examples{
+# example 1: Low High group
 df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
 df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
 df <- cbind(df1, df2)
 ggboxplot2("gene1", "gene3", df)
+# example 2: multi group
+df1 <- data.frame(gene1 = rnorm(30), gene2 = rnorm(30), gene3 = rnorm(30))
+df2 <- data.frame(group = rep(c(1, 2, 3), each = 10))
+df <- cbind(df1, df2)
+ggboxplot2("gene1", "group", df, group = "group")
 }
 \author{
 Yangming si
