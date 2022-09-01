@@ -238,45 +238,6 @@ ggplot(data = daf) +
 ## 火山图
 
 ``` r
-### 火山图 ###
-# 第一种：plot基础版
-#读取数据
-gene_list<-read.delim("data/volcano_plot_GSE20986.txt")
-#查看数据情况
-head(gene_list)
-```
-
-``` r
-#par(mar(3,3,2,1),mgp=c(1.6,0.6,0),tck=.01)
-plot(gene_list$logFC,-log10(gene_list$P.Value),
-     pch=16,#设置点的类型
-     cex=0.5,#设置点的大小
-     cex.lab=1.2,#设置坐标轴名称的字体大小
-     font.lab=2,#设置坐标轴名称的字体类型，粗体
-     col=ifelse(gene_list$P.Value<=0.01#设置点的颜色
-                &abs(gene_list$logFC)>1,"blue","gray"),
-     xlim=c(-10,10),ylim=c(0,15),#Set limits
-     xlab="log2 fold chage",
-     ylab="-log10p-value")#设置坐标轴标签
-```
-
-``` r
-# 第二种：
-diff0 = read.table("data/volcano_plot_GSE20986.txt",sep="\t",header=T)
-P.value = diff0$adj.P.Val
-FC = diff0$logFC
-df <- data.frame(P.value,FC)
-df$threshold = as.factor(abs(df$FC) > log(1.5,2) & df$P.value < 0.01)
-levels(df$threshold) = c('#f1f1f3','red')
-df$logp = -log10(df$P.value)
-
-plot(x = df[,2],y = df[,4], pch=16, col=df$threshold, 
-     xlab="Fold change", ylab="-Log10(Pvalue)",
-     cex=0.2, main="Volcano Plot")
-abline(v=c(-log(1.5,2),log(1.5,2)), h=-log10(0.01),col="green")
-```
-
-``` r
 # ggpolt2版本
 library(ggplot2)
 ggplot(data=df)+
@@ -426,34 +387,7 @@ ggsave("figs/01-scatter_ggplot.tiff",
        plot = scatter4,
          width = 6, height = 6)
 
-##### 火山图 #####
-### 第1种：plot基础版
-
-##读取数据
-load(file = "data/limma_fit2.rda")
-
-##查看数据情况
-head(allDiff)
-
-# 坐标轴上限
-xMax <- max(abs(allDiff$logFC))
-yMax <- max(-log10(allDiff$adj.P.Val))
-#y1Max <- max(allDiff$adj.P.Val)
-
-## 提取绘图所需数据
-x <- allDiff$logFC
-y <- -log10(allDiff$adj.P.Val)
-#y1 <- allDiff$adj.P.Val
-
-## 通过颜色来区分上下调基因
-colour1 <- ifelse(allDiff$P.Value <= 0.01
-                 &abs(allDiff$logFC) > 2,
-                 "green","gray")
-colour2 <- ifelse(allDiff$P.Value>0.01,"gray",
-                 ifelse( allDiff$logFC > 2,"red",
-                         ifelse( allDiff$logFC < -2, "green", "gray") )
-)
-## 绘图火山图
+## 保存为tiff
 
 # tiff(file="vol.tiff",
 #      width = 12,            #图片的宽度
@@ -462,36 +396,9 @@ colour2 <- ifelse(allDiff$P.Value>0.01,"gray",
 #      compression="lzw",
 #      bg="white",
 #      res=600)
-plot(x,y,
-  #y, x,
-     pch=16,#设置点的类型
-     cex=0.5,#设置点的大小
-     cex.lab=1.2,#设置坐标轴名称的字体大小
-     font.lab=2,#设置坐标轴名称的字体类型，粗体
-     #col=colour2,#设置点的颜色
-     xlim=c(-xMax,xMax),ylim=c(0,yMax),#设置横纵坐标
-  #ylim=c(-xMax,xMax),xlim=c(0,yMax),
-     xlab="log2 fold chage",
-     ylab="-log10p-value",#设置坐标轴标签
-     main="Volcano")
 
-# 标记符合条件的点
-diffSub=subset(allDiff, P.Value<0.01 & logFC>2)
-points(-log10(diffSub$P.Value),
-       diffSub$logFC, pch=20, col="red",cex=0.4)
-diffSub=subset(allDiff, P.Value<0.01 & logFC<(-2))
-points(-log10(diffSub$P.Value),
-       diffSub$logFC, pch=20, col="green",cex=0.4)
-abline(h=0,v = 0, lty=2,lwd=3)
 
 # dev.off()
-# 在图上标记基因
-grep("CD36",DiffGene$symbol)
-x[grep("CD36",DiffGene$symbol)]
-y[grep("CD36",DiffGene$symbol)]
-text(5.780170,11.456527,"CD36")
-
-text(-4.212683,10.842402,"DUSP6")
 
 # 第2种：ggpolt2版本
 library(ggplot2)
@@ -2772,4 +2679,3 @@ p3 +
     )
 ggsave("pillipop.png")
 ```
-
