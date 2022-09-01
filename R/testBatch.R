@@ -42,3 +42,31 @@ CorTestBatch <- function(df1, df2, CorrelationCutoff = 0.5, PvalueCutoff = 0.05,
     )
   return(cor_test_df)
 }
+
+#' Batch compute Logistic regression model
+#'
+#' @param x Independent variable name vector
+#' @param y Dependent variable name
+#' @param dat data matrix
+#' @return A tibble of Logistic regression result
+#' @author Yangming si
+#' @examples
+#' df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
+#' df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
+#' CorTestBatch(df1, df2)
+#' @export
+uni_logistic_batch <- function(x, y, dat, PvalueCutoff = 0.05) {
+  logistic_lst <- lapply(x, function(i){
+    fml <- as.formula(paste0(y, "~", i))
+    fit <- glm(data = dat, formula = fml, family = 'binomial')
+    broom::tidy(fit) %>%
+      mutate(gene = rep(i, 2), .before = 1) %>%
+      mutate(lower = confint(fit)[,1],
+             upper = confint(fit)[,2], .after = estimate)
+  })
+  logistic_df <- do.call(rbind, logistic_lst)
+  logistic_df[["Significance"]] <- ifelse(logistic_df[["p.value"]] < 0.05, "Sig", "Not Sig")
+  return(logistic_df)
+}
+
+
