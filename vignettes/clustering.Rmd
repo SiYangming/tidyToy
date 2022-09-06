@@ -1,0 +1,70 @@
+---
+title: "clustering"
+output: 
+  html_document:
+    toc: true
+    toc_depth: 3
+    theme: cosmo
+    code_folding: hide
+  rmarkdown::html_vignette:
+    keep_md: true
+vignette: >
+  %\VignetteIndexEntry{clustering}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```r
+library(ALL)
+data(ALL)
+d=exprs(ALL)d[1:5,1:5]  #共128个样品，12625个探针数据
+# 01005 01010 03002 04006 04007
+# 1000_at 7.597323 7.479445 7.567593 7.384684 7.905312
+# 1001_at 5.046194 4.932537 4.799294 4.922627 4.844565
+# 1002_f_at 3.900466 4.208155 3.886169 4.206798 3.416923
+# 1003_s_at 5.903856 6.169024 5.860459 6.116890 5.687997
+# 1004_at 5.925260 5.912780 5.893209 6.170245 5.615210
+
+##对这个芯片表达数据进行简单的normalization，取在各个样品差异很大的那些gene或者探针的数据来进行聚类分析
+
+mads=apply(d,1,mad)   
+#计算每个基因的标准差
+d=d[rev(order(mads))[1:5000],]
+#sweep函数减去中位数进行标准化
+d = sweep(d,1, apply(d,1,median,na.rm=T))
+#也可以对这个d矩阵用DESeq的normalization 进行归一化，取决于具体情况
+
+title="F:/ConsensusClusterPlus"  #设置图片输出路径
+
+results <- ConsensusClusterPlus(dataset, maxK = 6,
+                                reps = 50, pItem = 0.8,
+                                pFeature = 0.8,
+                                clusterAlg = "hc",
+                                seed=100,
+                                distance = "pearson",
+                                title = title,
+                                plot = "png")
+
+#结果将会输出k从2-6各个情况下的分型情况，聚类的方法用的是 hc ，抽样比例为0.8，最后输出png图#这里设置的maxK=6、reps=50，但是实际上需要更高的reps（如1000）和更高的maxK（如20）
+
+# 分类树及结果：
+
+results[[2]][["consensusTree"]] 
+# Call:# hclust(d = as.dist(1 - fm), method = finalLinkage)
+# # Cluster method   : average 
+# Number of objects: 128 
+
+results[[2]][["consensusClass"]][1:5] 
+
+# 01005 01010 03002 04006 04007 
+#     1     1     1     1     1
+
+icl <- calcICL(results, title = title,plot = "png")
+```
