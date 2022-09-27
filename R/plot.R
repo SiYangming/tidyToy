@@ -1,4 +1,4 @@
-#' Box plot for One vs More Variables: immunity Results
+#' Box plot for One vs More Variables: immunity Results (p starred)
 #'
 #' @param col1 column names of input data frame, only one
 #' @param col2 column names of input data frame, One or More
@@ -63,6 +63,79 @@ ggboxplot2 <- function(col1, col2, mat, group = NULL) {
       ggpubr::stat_compare_means(ggplot2::aes(group = group),
         comparisons = my_comparisons,
         label = "p.signif"
+      ) +
+      ggplot2::xlab(group) + ggplot2::ylab(col1)
+  }
+
+
+  return(p)
+}
+
+#' Box plot for One vs More Variables: immunity Results (pvalue)
+#'
+#' @param col1 column names of input data frame, only one
+#' @param col2 column names of input data frame, One or More
+#' @param mat Expression Matrix or data frame, not tibble
+#' @param group group column name or null, default NULL
+#' @return A ggplot2 object of box plot
+#' @author Yangming si
+#' @examples
+#' # example 1: Low High group
+#' df1 <- data.frame(gene1 = rnorm(50), gene2 = rnorm(50))
+#' df2 <- data.frame(gene3 = rnorm(50), gene4 = rnorm(50))
+#' df <- cbind(df1, df2)
+#' ggboxplot2("gene1", "gene3", df)
+#' # example 2: multi group
+#' df1 <- data.frame(gene1 = rnorm(30), gene2 = rnorm(30), gene3 = rnorm(30))
+#' df2 <- data.frame(group = rep(c(1, 2, 3), each = 10))
+#' df <- cbind(df1, df2)
+#' ggboxplot2("gene1", "group", df, group = "group")
+#' @export
+
+ggboxplot3 <- function(col1, col2, mat, group = NULL) {
+  gene <- as.numeric(mat[, col1])
+  if (is.null(group)) {
+    group <- if_else(gene > median(gene),
+                     paste0(col1, "-High"),
+                     paste0(col1, "-Low")
+    )
+    group <- factor(group, levels = c(
+      paste0(col1, "-Low"),
+      paste0(col1, "-High")
+    ))
+    if (length(col2) > 1) {
+      box <- reshape2::melt(data.frame(
+        group = group,
+        mat[, col2]
+      ))
+    } else {
+      box <- reshape2::melt(data.frame(
+        group = group,
+        mat[, col2]
+      ))
+      box$variable <- col2
+    }
+
+    box$variable <- str_replace_all(box$variable, "\\.", " ")
+
+    p <- ggpubr::ggboxplot(box,
+                           x = "variable", y = "value", color = "group",
+                           palette = c("#00AFBB", "#E7B800")
+    ) +
+      # easy_rotate_x_labels(angle = 45, teach = TRUE)
+      # theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      ggpubr::stat_compare_means(aes(group = group), label = "p.signif") +
+      xlab("") + ylab("")
+  } else {
+    box <- mat[, c(col1, group)]
+    my_comparisons <- Group2Comparison(unique(sort(as.character(box[, group]))))
+    p <- ggpubr::ggboxplot(box,
+                           x = group,
+                           y = col1, color = group
+    ) +
+      ggpubr::stat_compare_means(ggplot2::aes(group = group),
+                                 comparisons = my_comparisons,
+                                 label = "p.format"
       ) +
       ggplot2::xlab(group) + ggplot2::ylab(col1)
   }
@@ -263,4 +336,49 @@ VolcanoPlot <- function(DEGs, logfc = "logFC", pvalue = "P.Value",
   # y[grep("CD36", DiffGene$symbol)]
   text(DEGs[[logfc]][ids[1]], -log10(DEGs[[pvalue]][ids[1]]), rownames(DEGs)[ids[1]])
   text(DEGs[[logfc]][ids[length(ids)]], -log10(DEGs[[pvalue]][ids[length(ids)]]), rownames(DEGs)[ids[length(ids)]])
+}
+
+#' Plot PCA.
+#'
+#' @description PCA Plot for Gene Expression
+#' @param expr Gene Expression Matrix
+#' @param ntop How many genes to use
+#' @param group group vector
+#' @param show_name show name or not.
+#' @return ggplot object.
+#' @examples
+#' library(CLL)
+#' data("CLLbatch")
+#' mat <- exprs(CLLbatch)
+#' group <- rep(c("Control", "Treat"), each = ncol(mat) / 2)
+#' PCA_new(mat, group = group)
+#' @export
+PCA_new <- function(expr, ntop = 500, group, show_name = F){
+  library(ggplot2)
+  library(ggrepel)
+  object <- expr
+  rv <- genefilter::rowVars(object)
+  select <- order(rv, decreasing = TRUE)[seq_len(min(ntop, length(rv)))]
+  pca <- prcomp(t(object[select, ]))
+  percentVar <- pca$sdev^2/sum(pca$sdev^2)
+  d <- data.frame(PC1 = pca$x[, 1],
+                  PC2 = pca$x[, 2],
+                  group = group,
+                  name = colnames(object))
+  attr(d, "percentVar") <- percentVar[1:2]
+  if (show_name) {
+    ggplot(data = d, aes_string(x = "PC1", y = "PC2", color = "group")) +
+      geom_point(size = 2) +
+      xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
+      ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance")) +
+      geom_text_repel(aes(label = name),
+                      size = 3,
+                      segment.color = "black",
+                      show.legend = FALSE )
+  } else {
+    ggplot(data = d, aes_string(x = "PC1", y = "PC2",color = "group")) +
+      geom_point(size = 2) +
+      xlab(paste0("PC1: ", round(percentVar[1] * 100), "% variance")) +
+      ylab(paste0("PC2: ", round(percentVar[2] * 100), "% variance"))
+  }
 }
