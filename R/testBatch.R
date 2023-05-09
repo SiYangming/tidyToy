@@ -48,6 +48,7 @@ CorTestBatch <- function(df1, df2, CorrelationCutoff = 0.5, PvalueCutoff = 0.05,
 #' @param x Independent variable name vector
 #' @param y Dependent variable name
 #' @param dat data matrix
+#' @param PvalueCutoff Pvalue Cutoff
 #' @return A tibble of Logistic regression result
 #' @author Yangming si
 #' @examples
@@ -69,4 +70,43 @@ uni_logistic_batch <- function(x, y, dat, PvalueCutoff = 0.05) {
   return(logistic_df)
 }
 
+#' Batch compute Logistic regression model
+#'
+#' @param vec Numeric vector
+#' @param group Group character vector
+#' @return Normality Test and Variance test result
+#' @author Yangming si
+#' @examples
+#' vec <- rnorm(100)
+#' group <- rep(c("a", "b"), each = 50)
+#' detect_test_method(vec, group)
+#' @export
+detect_test_method <- function(vec, group){
+  library(fBasics)
+  ### Tests for normality
+  if (length(vec) < 5000) {
+    shapiro.test(vec)
+  } else {
+    print("Density normal distribution:")
+    ks.test(vec, "dnorm", na.rm = TRUE)
+    print("Probabilities normal distribution:")
+    ks.test(vec, "pnorm", na.rm = TRUE)
+    print("Quantile normal distribution:")
+    ks.test(vec, "qnorm", na.rm = TRUE)
+    print("random normal distribution:")
+    ks.test(vec, "rnorm", na.rm = TRUE)
+  }
+  jarqueberaTest(vec)
+  dagoTest(vec)
+  jbTest(vec)
+  adTest(vec)
+  cvmTest(vec)
+  lillieTest(vec)
+  pchiTest(vec)
+  sfTest(vec)
 
+  ### Two sample variance tests
+  bartlett.test(vec, group)
+  car::leveneTest(vec, as.factor(group))
+  varianceTest(vec[1:(length(vec)/2)], vec[(length(vec)/2+1):length(vec)])
+}
